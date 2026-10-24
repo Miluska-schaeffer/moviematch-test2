@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>MovieMatch – user test</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --ink: #1F1D1A;
+    --muted: #5C5850;
+    --line: #C9C4B8;
+    --line-soft: #E4E1DA;
+    --accent: #2F4BC7;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #E9EDFB;
+    --accent-soft-ink: #1F2A5C;
+    --dark: #1A1325;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px; line-height: 1.55;
+    -webkit-text-size-adjust: 100%;
+  }
+  main {
+    max-width: 480px; margin: 0 auto;
+    padding: calc(env(safe-area-inset-top, 0px) + 32px) 20px calc(env(safe-area-inset-bottom, 0px) + 32px);
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  h1 { margin: 0; font-size: 26px; line-height: 1.2; font-weight: 700; }
+  p { margin: 0; }
+  .part { font-size: 14px; font-weight: 600; color: var(--muted); }
+  .lead { color: var(--muted); font-size: 16px; line-height: 1.5; }
+  .small { font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+  .stack-lg { display: flex; flex-direction: column; gap: 14px; }
+
+  .tip { display: flex; gap: 10px; align-items: flex-start; background: var(--accent-soft); color: var(--accent-soft-ink); border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.45; }
+  .tip svg { flex: 0 0 auto; margin-top: 1px; }
+  .about { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 14px; padding: 16px; }
+
+  label.q, legend.q { font-size: 18px; line-height: 1.35; font-weight: 600; padding: 0; }
+  fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+  fieldset .stack { margin-top: 12px; }
+  textarea, input[type=text] {
+    font: inherit; font-size: 16px; line-height: 1.5; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; width: 100%;
+  }
+  input[type=text] { min-height: 52px; }
+  textarea { resize: vertical; min-height: 104px; }
+  textarea:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+
+  .btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 52px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-ink); width: 100%; cursor: pointer; }
+  .btn:focus-visible, .opt:focus-visible, .shot:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn[data-go="ready"]:disabled { opacity: 1; font-size: 22px; }
+
+  .scale { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .scale-ends { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .opts { display: grid; gap: 8px; }
+  .opts-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .opts-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .opt {
+    font: inherit; font-size: 16px; min-height: 48px; border-radius: 12px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--line); color: var(--ink); padding: 8px 10px;
+  }
+  .opt.list { text-align: left; padding: 12px 14px; min-height: 52px; }
+  .opt[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .opt.list[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); border: 2px solid var(--accent); }
+
+  .progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .progress span { height: 4px; border-radius: 2px; background: #DAD6CD; position: relative; }
+  .progress span.past::after { content: ""; position: absolute; left: 0; right: 0; top: -14px; bottom: -14px; }
+  .progress span.on { background: var(--accent); }
+  .stephead { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--muted); }
+
+  .shotrow { display: flex; gap: 16px; align-items: flex-end; width: 100%; padding: 0; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: zoom-in; }
+  .shotrow > img, .shotrow > .mini { flex: 0 0 auto; width: 164px; height: auto; border-radius: 14px; border: 1px solid #DAD6CD; display: block; }
+  .shotrow .side { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-bottom: 2px; }
+  .shotrow .side p { font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .shotrow .side b { font-size: 13px; color: var(--accent); }
+  .shotrow:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; border-radius: 14px; }
+  .films { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .film { display: flex; flex-direction: column; gap: 6px; }
+  .poster { aspect-ratio: 2 / 3; width: 100%; border-radius: 10px; background: #2A1F3D; object-fit: cover; display: block; }
+  .film-title { font-size: 13px; line-height: 1.3; font-weight: 600; }
+  .vote { align-self: flex-start; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 9px; background: #EDEAE4; color: #4A463F; }
+  .vote.yes { background: #DDF3E4; color: #135C2E; }
+  .vote.seen { background: #FBE9D5; color: #7A3E0B; }
+  .winner { display: flex; gap: 16px; align-items: flex-end; }
+  .winner .poster { width: 130px; flex: 0 0 auto; border-radius: 12px; }
+
+  /* First look: full screen for 5 seconds */
+  .firstlook { position: fixed; inset: 0; background: var(--dark); display: flex; flex-direction: column; }
+  .firstlook .bar, .protobar {
+    background: var(--bg); border-bottom: 1px solid var(--line-soft);
+    padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 10px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px;
+  }
+  .count { font-weight: 700; color: var(--accent-ink); background: var(--accent); border-radius: 999px; min-width: 32px; text-align: center; padding: 3px 10px; }
+  .firstlook img { flex: 1 1 auto; min-height: 0; width: 100%; object-fit: contain; object-position: top; }
+
+  /* Prototype inside the page */
+  .proto { position: fixed; inset: 0; background: var(--dark); display: flex; flex-direction: column; }
+  .protobar { padding-top: calc(env(safe-area-inset-top, 0px) + 6px); padding-bottom: 6px; min-height: 0; }
+  .protobar .task { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stuck { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: none; border: 0; text-decoration: underline; padding: 2px 0; min-height: 28px; white-space: nowrap; cursor: pointer; }
+  .proto .stage { flex: 1 1 auto; min-height: 0; display: flex; justify-content: center; align-items: stretch; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .proto iframe { border: 0; width: 100%; height: 100%; background: var(--dark); }
+  @media (min-width: 700px) {
+    .proto .stage { align-items: center; padding: 24px; }
+    .proto iframe { width: 390px; height: min(800px, 100%); border: 10px solid #222; border-radius: 40px; }
+  }
+
+  .lightbox { position: fixed; inset: 0; background: rgba(15, 12, 20, .92); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px); gap: 12px; z-index: 10; }
+  .lightbox img { max-width: 100%; max-height: calc(100% - 64px); border-radius: 14px; }
+  .lightbox button { font: inherit; font-size: 16px; font-weight: 600; color: #fff; background: rgba(255,255,255,.15); border: 0; border-radius: 999px; padding: 10px 22px; min-height: 44px; cursor: pointer; }
+
+  .notice { background: #FBE9D5; color: #5C2E06; border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+
+  /* Recreations of the tester's own screens */
+  .mini { width: 164px; height: 337px !important; overflow: hidden; position: relative; }
+  .mini .mock { transform: scale(.42); transform-origin: top left; position: absolute; top: 0; left: 0; }
+  .mock { width: 390px; height: 800px; background: #0C0A11; color: #F2EEF8; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 28px 22px; display: flex; flex-direction: column; gap: 14px; text-align: left; overflow: hidden; }
+  .m-x { font-size: 26px; color: #CFC8DC; line-height: 1; }
+  .m-counter { font-size: 13px; font-weight: 700; letter-spacing: .2em; color: #A49CB4; margin-top: 18px; }
+  .m-card { position: relative; flex: 1 1 auto; border-radius: 30px; overflow: hidden; background: #241B33 center / cover no-repeat; border: 1px solid #2E2540; }
+  .m-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(12,10,17,0) 25%, rgba(27,20,40,.92) 58%, #1B1428 100%); }
+  .m-info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 20px 18px 22px; display: flex; flex-direction: column; gap: 8px; }
+  .m-title { font-size: 30px; font-weight: 700; line-height: 1.1; color: #FFFFFF; }
+  .m-meta { font-size: 14px; color: #E3DDEC; }
+  .m-syn { font-size: 14px; line-height: 1.4; color: #D7D0E2; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .m-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .m-btns span { border-radius: 999px; text-align: center; font-weight: 700; font-size: 18px; padding: 13px 0; color: #FFFFFF; }
+  .m-nope { background: #BF4A43; } .m-yes { background: #3D875A; }
+  .m-seen { text-align: center; font-size: 15px; color: #CFC8DC; margin-top: 6px; }
+  .m-psst { text-align: center; font-size: 13px; color: #A49CB4; }
+  .m-hab { text-align: center; font-size: 30px; font-weight: 700; color: #CFCBD4; margin: 26px 0 8px; }
+  .m-ticket { border-radius: 30px; overflow: hidden; background: #1B1428; border: 1px solid #2E2540; display: flex; flex-direction: column; }
+  .m-tposter { height: 280px; background: #241B33 center / cover no-repeat; }
+  .m-pill { align-self: center; margin-top: -18px; background: #17111F; border: 1px solid #3A3048; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #F2EEF8; position: relative; }
+  .m-pill-top { margin: -4px auto 4px; }
+  .m-tbody { padding: 10px 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .m-wtw { font-size: 12px; font-weight: 700; letter-spacing: .16em; color: #A49CB4; margin-top: 8px; }
+  .m-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .m-chips span { border: 1px solid #4A4058; border-radius: 999px; padding: 4px 12px; font-size: 13px; color: #D7D0E2; }
+  .m-new { text-align: center; font-weight: 700; font-size: 17px; color: #E3DDEC; margin-top: 18px; }
+  .lightbox .mock { flex: 0 0 auto; border-radius: 18px; transform-origin: center; }
+  .recreated { font-size: 13px; line-height: 1.45; color: var(--muted); }
+
+  .ready { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 18px; padding: 24px; }
+  .ready .num { font-size: 120px; font-weight: 800; line-height: 1; color: var(--accent); }
+  @media (prefers-reduced-motion: no-preference) { .ready .num { animation: pop .9s ease-out; } @keyframes pop { from { transform: scale(1.6); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1); opacity: 1; } } }
+
+  .toast { position: fixed; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); max-width: 448px; margin: 0 auto; background: var(--ink); color: #FFFFFF; border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.45; z-index: 20; }
+
+  .need { font-size: 14px; font-weight: 600; color: #A3261B; margin-top: 4px; }
+  textarea.missing, input.missing { border-color: #A3261B; }
+  .missing-group .opt { border-color: #A3261B; }
+
+  .backbar { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); background: var(--bg); color: var(--ink); border-radius: 14px; padding: 14px 16px; font-size: 16px; font-weight: 600; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,.35); z-index: 5; }
+  @media (prefers-reduced-motion: no-preference) { .backbar { animation: up .3s ease-out; } @keyframes up { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } } }
+  .proto { position: fixed; }
+  .proto .stage { position: relative; }
+
+  .backpill { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(247,246,243,.95); color: var(--ink); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.3); z-index: 5; }
+  @media (prefers-reduced-motion: no-preference) { .backpill { animation: pillin .3s ease-out; } @keyframes pillin { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } } }
+  [hidden] { display: none !important; }
+  @media (prefers-reduced-motion: no-preference) { main { animation: in .25s ease-out; } @keyframes in { from { opacity: 0; } to { opacity: 1; } } }
+</style>
+</head>
+<body>
+<div id="app"><main><h1>Loading the test…</h1><p class="lead">If this message doesn’t go away, open this page in Chrome or Safari. Previews and some in-app browsers don’t run the test.</p></main></div>
+
+<script>
+/* ============================================================
+   SETTINGS: fill in the two Supabase values before uploading.
+   They're the same two values you pasted into App.tsx.
+   ============================================================ */
+const CONFIG = {
+  prototypeUrl: "https://maze-swab-65680810.figma.site/",
+  supabaseProjectId: "mhxolypcoccahumanspw",
+  supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oeG9seXBjb2NjYWh1bWFuc3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0NDA1MTcsImV4cCI6MjEwODAxNjUxN30.p8rcHPJUWKbRs_ceYMPI6u5MRFG1NYkTbYp8GQy6-Bk",
+  stuckAfterSeconds: 40,
+  winnerHoldSeconds: 8,
+  firstLookSeconds: 5
+};
+
+const LOBBY_SHOTS = {
+  "warm & fuzzy": "img/lobby-host-warm-fuzzy.jpg",
+  "giggle time": "img/lobby-host-giggle-time.jpg",
+  "buckle up": "img/lobby-host-buckle-up.jpg",
+  "feeling spooky": "img/lobby-host-feeling-spooky.jpg",
+  "hit us in the feels": "img/lobby-host-hit-us-in-the-feels.jpg",
+  "butterflies, please": "img/lobby-host-butterflies-please.jpg",
+  "surprise us": "img/lobby-host-surprise-us.jpg",
+  "none": "img/lobby-host-no-mood.jpg"
+};
+
+/* ---------- small helpers ---------- */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const params = new URLSearchParams(location.search);
+const TESTER = (params.get("tester") || "").slice(0, 20);
+const ROLE = params.get("role") === "joiner" ? "joiner" : "host";
+const KEY = "mm_test_" + TESTER;
+
+const MIC = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2F4BC7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10a7 7 0 0 0 14 0"></path><line x1="12" y1="17" x2="12" y2="22"></line></svg>';
+const micTip = '<div class="tip">' + MIC + '<p>Typing is tiring on a phone. Tap the microphone on your keyboard and just say your answer out loud.</p></div>';
+
+/* ---------- state (kept in this tab, so a reload doesn't lose answers) ---------- */
+let S = {
+  screen: "start",
+  reached: { setup: false, lobby: false, voting: false, winner: false },
+  mood: undefined,
+  films: [],
+  votes: {},
+  winner: null,
+  stuck: false,
+  protoStartedAt: null,
+  protoEndedAt: null,
+  stepIndex: 0,
+  protoRestarts: 0,
+  answers: {},
+  pending: []
+};
+try { const saved = sessionStorage.getItem(KEY); if (saved) S = Object.assign(S, JSON.parse(saved)); } catch (e) {}
+const persist = () => { try { sessionStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+/* ---------- saving answers to Supabase ---------- */
+function postRows(rows) {
+  return fetch("https://" + CONFIG.supabaseProjectId + ".supabase.co/rest/v1/test_answers", {
+    method: "POST",
+    keepalive: true,
+    headers: { apikey: CONFIG.supabaseAnonKey, "Content-Type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify(rows)
+  }).then((r) => { if (!r.ok) throw new Error("save failed " + r.status); });
+}
+function save(screen, answers) {
+  S.answers[screen] = answers;
+  S.pending.push({ tester: TESTER, role: ROLE, screen: screen, answers: answers, client_ts: Date.now() });
+  persist();
+  const rows = S.pending.slice();
+  postRows(rows).then(() => {
+    S.pending = S.pending.filter((p) => !rows.some((r) => r.screen === p.screen && r.client_ts === p.client_ts));
+    persist();
+  }).catch(() => { /* stays in S.pending and is sent again with the next save */ });
+}
+
+/* ---------- reading the form on the current screen ---------- */
+function collect() {
+  const out = {};
+  document.querySelectorAll("[data-q]").forEach((el) => {
+    const k = el.getAttribute("data-q");
+    if (el.matches("textarea, input")) out[k] = el.value.trim();
+    else { const on = el.querySelector('[aria-pressed="true"]'); out[k] = on ? on.getAttribute("data-v") : null; }
+  });
+  return out;
+}
+
+/* ---------- building blocks ---------- */
+// Every question is required unless it says "Optional". requiredIf: only required when another answer has a value.
+const req = (opts) => opts && opts.optional ? '' : (opts && opts.requiredIf ? ' data-required-if="' + esc(opts.requiredIf) + '"' : ' data-required="1"');
+const textQ = (key, label, placeholder, opts) => {
+  opts = opts || {};
+  return '<div class="stack"><label class="q" for="' + key + '">' + label + '</label>' +
+    (opts.hint ? '<span class="small">' + opts.hint + '</span>' : '') +
+    (opts.input
+      ? '<input type="text" id="' + key + '" data-q="' + key + '"' + req(opts) + ' placeholder="' + esc(placeholder) + '" autocomplete="off">'
+      : '<textarea id="' + key + '" data-q="' + key + '"' + req(opts) + ' rows="' + (opts.rows || 4) + '" placeholder="' + esc(placeholder) + '"></textarea>') +
+    '</div>';
+};
+const choiceQ = (key, label, values, cls) =>
+  '<fieldset><legend class="q">' + label + '</legend><div class="opts ' + (cls || "opts-3") + '" data-q="' + key + '" data-required="1" role="group">' +
+  values.map((v) => '<button type="button" class="opt' + (cls === "list" ? " list" : "") + '" aria-pressed="false" data-v="' + esc(v) + '">' + esc(v) + '</button>').join("") +
+  '</div></fieldset>';
+const listQ = (key, label, values) =>
+  '<fieldset><legend class="q">' + label + '</legend><div class="opts" data-q="' + key + '" data-required="1" role="group">' +
+  values.map((v) => '<button type="button" class="opt list" aria-pressed="false" data-v="' + esc(v) + '">' + esc(v) + '</button>').join("") +
+  '</div></fieldset>';
+const easeQ = (key) =>
+  '<fieldset><legend class="q">How easy or hard was this step?</legend><div class="stack"><div class="scale" data-q="' + key + '" data-required="1" role="group">' +
+  [1, 2, 3, 4, 5, 6, 7].map((n) => '<button type="button" class="opt" aria-pressed="false" aria-label="' + n + ' of 7" data-v="' + n + '">' + n + '</button>').join("") +
+  '</div><div class="scale-ends"><span>Very hard</span><span>Very easy</span></div></div></fieldset>';
+const confusingQ = (key, placeholder) => textQ(key, "Was anything here confusing, or missing?", placeholder, { hint: "Optional. Even small things help.", optional: true });
+const side = (caption) => '<span class="side">' + (caption ? '<p>' + esc(caption) + '</p>' : '') + '<b>Tap to see it bigger</b></span>';
+const shot = (src, alt, caption) => '<button type="button" class="shotrow" data-zoom="' + esc(src) + '"><img src="' + esc(src) + '" alt="' + esc(alt) + '">' + side(caption) + '</button>';
+
+
+/* ---------- recreations of the tester's own screens ---------- */
+const bg = (url) => url ? ' style="background-image:url(&quot;' + esc(url) + '&quot;)"' : '';
+function votingMock(f) {
+  return '<div class="mock"><div class="m-x">✕</div>' +
+    '<div class="m-counter">' + esc((f.counter || "Movie 01 / 05").toUpperCase()) + '</div>' +
+    '<div class="m-card"' + bg(f.poster) + '><div class="m-info">' +
+    '<div class="m-title">' + esc(f.title) + '</div>' +
+    '<div class="m-btns"><span class="m-nope">Nope</span><span class="m-yes">Yes!</span></div>' +
+    '<div class="m-seen">Already watched</div></div></div>' +
+    '<div class="m-psst">Psst! Private votes stay hidden</div></div>';
+}
+function winnerMock(w) {
+  return '<div class="mock"><div class="m-hab">Habemus Match!</div>' +
+    (w.result ? '<div class="m-pill m-pill-top">' + esc(w.result) + '</div>' : '') +
+    '<div class="m-ticket">' +
+    '<div class="m-tposter"' + bg(w.poster) + '></div>' +
+    '<div class="m-tbody"><div class="m-title">' + esc(w.title) + '</div>' +
+    (w.meta ? '<div class="m-meta">' + esc(w.meta) + '</div>' : '') +
+    (w.synopsis ? '<div class="m-syn">' + esc(w.synopsis) + '</div>' : '') +
+    ((w.services || []).length ? '<div class="m-wtw">WHERE TO WATCH</div><div class="m-chips">' + w.services.map((x) => '<span>' + esc(x) + '</span>').join("") + '</div>' : '') +
+    '</div></div><div class="m-new">New movie night</div></div>';
+}
+const mockShot = (mockHtml, caption) =>
+  '<button type="button" class="shotrow" data-mockzoom="1"><span class="mini">' + mockHtml + '</span>' + side(caption) + '</button>';
+
+/* ---------- the steps a tester actually reached ---------- */
+function steps() {
+  const all = [];
+  if (S.reached.setup) all.push("setup");
+  if (S.reached.lobby) all.push("lobby");
+  if (S.reached.voting) all.push("voting");
+  if (S.reached.winner) all.push("winner");
+  return all;
+}
+const STEP_TITLES = { setup: "Setting up", lobby: "Waiting for the vote", voting: "Voting", winner: "Tonight’s movie" };
+const STEP_ORDER = ["setup", "lobby", "voting", "winner"];
+function stepHead(step) {
+  const n = STEP_ORDER.indexOf(step) + 1;
+  return '<div class="stack"><div class="stephead"><span>Step ' + n + ' of 4</span><span>About ' + (step === "winner" ? 1 : 2) + ' min</span></div>' +
+    '<div class="progress" aria-hidden="true">' + STEP_ORDER.map((s, i) => '<span class="' + (i < n ? "on" : "") + (i < n - 1 ? " past" : "") + '"></span>').join("") + '</div></div>';
+}
+function nextLabelAfter(step) {
+  const list = steps();
+  const i = list.indexOf(step);
+  if (i === -1 || i === list.length - 1) return "Almost done: Last questions";
+  return "Next: " + STEP_TITLES[list[i + 1]];
+}
+function lobbyShot() {
+  const key = S.mood == null ? "none" : String(S.mood).toLowerCase().trim();
+  return LOBBY_SHOTS[key] || LOBBY_SHOTS["none"];
+}
+
+/* ---------- screens ---------- */
+const SCREENS = {
+  missing() {
+    return '<main><h1>This link is missing your tester code</h1><p class="lead">Please use the exact link I sent you. It ends with something like ?tester=P1.</p></main>';
+  },
+
+  start() {
+    return '<main>' +
+      '<p class="part">User test, about 15 minutes</p>' +
+      '<h1>Hi, and thanks for testing my app!</h1>' +
+      '<p class="lead">Please read these instructions carefully.</p>' +
+      '<p>In this test you’ll do a few tasks on a prototype, followed by some questions. Please share everything you can, even the smallest things, it’ll help me a lot.</p>' +
+      '<p>Remember this is just a prototype, so some things don’t work yet: e.g., sharing by link. If anything else doesn’t work, please let me know.</p>' +
+      '<p>There are no right or wrong answers. If you get stuck, take a breath and try to keep going! If something feels unclear, that’s something for me to fix. Have fun!</p>' +
+      '<div class="tip">' + MIC + '<p><b>Hint:</b> You don’t have to type. Tap the microphone on your keyboard and just say your answers out loud. Answer in whatever language you like.</p></div>' +
+      '<p class="small">Your answers are anonymous: I won’t use your name anywhere. While you use the prototype, it records where you tap and how long each screen takes, but not what you type.</p>' +
+      '<p class="small">Optional: if you’re comfortable with it, turn on your phone’s screen recording now and send me the video at the end.</p>' +
+      '<button class="btn" data-go="ready">Let’s start</button>' +
+      '</main>';
+  },
+
+
+  ready() {
+    return '<div class="ready"><h1>Get ready</h1>' +
+      '<p class="lead">You’ll see the first screen of an app for 5 seconds. Then it disappears.</p>' +
+      '<div class="num" id="num" aria-live="polite">3</div></div>';
+  },
+
+  firstlook() {
+    return '<div class="firstlook"><div class="bar"><span>Take a look at the screen. It disappears in</span><span class="count" id="count">' + CONFIG.firstLookSeconds + '</span></div>' +
+      '<img src="img/landing.jpg" alt="The first screen of the app"></div>';
+  },
+
+  firstlookQ() {
+    return '<main>' +
+      '<p class="part">Part 1 of 4: First look</p>' +
+      '<h1>What did you see?</h1>' +
+      '<p class="lead">Answer from memory. There’s no wrong answer.</p>' +
+      textQ("q1_what_and_who", "What do you think this app does, and who is it for?", "You can do it! Write or say your answer…") +
+      micTip +
+      '<button class="btn" data-save="first_look" data-go="task">Next</button>' +
+      '</main>';
+  },
+
+  task() {
+    return '<main>' +
+      '<p class="part">Part 2 of 4: Movie night</p>' +
+      '<div class="about stack"><span class="small"><b>About the app</b></span><p>MovieMatch helps a group of friends decide what to watch together, without endless discussions.</p></div>' +
+      '<h1>Your task</h1>' +
+      '<p>It’s Friday night. You and 5 friends are about to watch a movie together, and you’re setting up tonight’s movie night.</p>' +
+      '<p>This is a prototype so your friends are simulated. Their votes will come in before yours, so you’ll be the last one to send your votes.</p>' +
+      '<p><b>Open MovieMatch, set up tonight’s movie night and cast your votes. Stop when the app shows tonight’s movie.</b></p>' +
+      '<p class="small">The app opens right here. When you’re done, it closes by itself and the questions continue. If you get stuck, a way out will appear at the top.</p>' +
+      '<button class="btn" data-go="proto">Open moviematch</button>' +
+      '</main>';
+  },
+
+  proto() {
+    const src = CONFIG.prototypeUrl + (CONFIG.prototypeUrl.indexOf("?") === -1 ? "?" : "&") + "tester=" + encodeURIComponent(TESTER);
+    return '<div class="proto"><div class="protobar"><span class="task">Task: set up movie night and vote</span>' +
+      '<button class="stuck" id="stuck" hidden>I’m stuck</button></div>' +
+      '<div class="stage"><iframe id="frame" src="' + esc(src) + '" title="MovieMatch prototype" allow="clipboard-write"></iframe></div></div>';
+  },
+
+  stuckQ() {
+    return '<main>' +
+      '<p class="part">Part 3 of 4: Step by step</p>' +
+      '<h1>Thanks for telling me</h1>' +
+      '<p class="lead">Getting stuck is useful for me: it shows what to fix.</p>' +
+      textQ("where_stuck", "Where did you get stuck, and what were you trying to do?", "Write or say your answer…") +
+      micTip +
+      '<button class="btn" data-save="stuck" data-go="quick">Next</button>' +
+      '</main>';
+  },
+
+  quick() {
+    return '<main>' +
+      '<p class="part">Part 3 of 4: Step by step</p>' +
+      '<h1>' + (S.reached.winner ? "Done! A few quick questions first" : "A few quick questions first") + '</h1>' +
+      '<p class="lead">Answer from memory. After this, we’ll go through what you just did, step by step.</p>' +
+      (S.reached.winner ? textQ("q10_movie_name", "What’s the name of tonight’s movie?", "Movie title", { input: true, hint: "Relax, doesn’t have to be the exact name, just what you remember" }) : "") +
+      textQ("q12_describe", "How would you describe this app to a friend?", "Write or say your answer…") +
+      textQ("q13_mood", "What was tonight’s mood? How could you tell?", "Write or say your answer…", { rows: 3 }) +
+      micTip +
+      '<button class="btn" data-save="quick" data-go="step0">' + (steps().length ? "Next: " + STEP_TITLES[steps()[0]] : "Almost done: Last questions") + '</button>' +
+      '</main>';
+  },
+
+  step_setup() {
+    return '<main>' + stepHead("setup") +
+      '<div class="stack"><h1>Setting up</h1><p class="lead">This is the screen where you set up movie night. Look at it again before you answer.</p></div>' +
+      shot("img/setup.jpg", "Setup screen", "") +
+      easeQ("ease") + micTip +
+      confusingQ("confusing", "This is your moment, write or say what you noticed…") +
+      '<button class="btn" data-save="step_setup" data-go="nextstep">' + nextLabelAfter("setup") + '</button>' +
+      '</main>';
+  },
+
+  step_lobby() {
+    return '<main>' + stepHead("lobby") +
+      '<div class="stack"><h1>Waiting for the vote</h1><p class="lead">This is the screen where you waited for the vote. Look at it again before you answer.</p></div>' +
+      shot(lobbyShot(), "Your lobby", "Your screen may have looked a little different.") +
+      easeQ("ease") + micTip +
+      textQ("confusing", "Was anything here confusing, or missing?", "Write or say what you noticed, even if it’s super silly…", { hint: "Optional.", optional: true }) +
+      listQ("who_starts", "Who could start the vote?", ["Only me, as the host", "Anyone in the group", "I’m not sure"]) +
+      textQ("how_knew", "How did you know?", "Share the secret, write or say your answer…", { hint: "Optional.", rows: 3, optional: true }) +
+      '<button class="btn" data-save="step_lobby" data-go="nextstep">' + nextLabelAfter("lobby") + '</button>' +
+      '</main>';
+  },
+
+  step_voting() {
+    const titles = S.films.slice(0, 5).map((f) => f.title).join(", ");
+    return '<main>' + stepHead("voting") +
+      '<div class="stack"><h1>Voting</h1><p class="lead">This is one of your voting screens. Look at it again before answering.</p></div>' +
+      (S.films[0] && S.films[0].poster
+        ? mockShot(votingMock(S.films[0]), "This is a recreation of your screen. It may look slightly different, but it shows one of your recommended movies.")
+        : shot("img/voting.jpg", "A voting card", "Your cards showed your own films.")) +
+      (titles ? '<p class="small"><b>Your recommended films:</b> ' + esc(titles) + '</p>' : '') +
+      easeQ("ease") +
+      confusingQ("confusing", "Open your heart and write or say what you noticed…") +
+      textQ("how_picked", "In your own words, how is tonight’s movie picked?", "You can do it! Write or say your answer…") +
+      micTip +
+      choiceQ("would_watch_any", "Would you have watched any of the recommended films?", ["Yes", "No", "Not sure"]) +
+      '<button class="btn" data-save="step_voting" data-go="nextstep">' + nextLabelAfter("voting") + '</button>' +
+      '</main>';
+  },
+
+  step_winner() {
+    const w = S.winner || {};
+    return '<main>' + stepHead("winner") +
+      '<div class="stack"><h1>Tonight’s movie</h1><p class="lead">This is the movie your group picked for tonight. Look at the screen again before answering.</p></div>' +
+      (w.title && w.meta
+        ? mockShot(winnerMock(w), "This is a recreation of your screen. It may look slightly different, but it shows the winner movie.")
+        : shot(/tied|random/i.test(w.result || "") ? "img/winner-tie.jpg" : "img/winner.jpg", "Tonight’s movie screen", "Your screen showed your group’s movie.")) +
+      micTip +
+      (S.mood ? choiceQ("fits_mood", "Does this movie fit tonight’s mood?", ["Yes", "Somewhat", "No"]) : "") +
+      confusingQ("confusing", "Don’t be shy, write or say what you noticed…") +
+      '<button class="btn" data-save="step_winner" data-go="nextstep">Almost done: Last questions</button>' +
+      '</main>';
+  },
+
+  overall() {
+    return '<main>' +
+      '<p class="part">Part 4 of 4: Overall</p>' +
+      '<h1>A few last questions</h1>' +
+      choiceQ("would_use", "Would you use this with your own group?", ["Yes", "Maybe", "No"]) +
+      textQ("would_use_why", "Why?", "What’s the first reason that comes to your mind…", { rows: 3 }) +
+      choiceQ("hard_to_read", "Was any text hard to read?", ["Yes", "No"], "opts-2") +
+      textQ("hard_to_read_where", "If yes, where?", "For example: the lobby or voting cards", { input: true, requiredIf: "hard_to_read:Yes" }) +
+      textQ("anything_else", "Anything else you’d want to share?", "Dime ahora o calla para siempre…", { hint: "Optional.", rows: 3, optional: true }) +
+      micTip +
+      '<button class="btn" data-save="overall" data-go="thanks">Send my answers</button>' +
+      '</main>';
+  },
+
+  done() {
+    return '<main style="padding-top:calc(env(safe-area-inset-top,0px) + 96px)">' +
+      '<h1>You’ve already done this test</h1>' +
+      '<p>Thank you, your answers are saved. One run is all I need, so you can close this window now.</p>' +
+      '</main>';
+  },
+
+  thanks() {
+    return '<main style="padding-top:calc(env(safe-area-inset-top,0px) + 96px)">' +
+      '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2F4BC7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 12.5l2.5 2.5L16 9.5"></path></svg>' +
+      '<h1>Gracias!</h1>' +
+      '<p>Your answers are saved and cozy. You helped me a lot.</p>' +
+      '<p>If you recorded your screen, please stop the recording and send me the video.</p>' +
+      '<p><b>Please close this window now.</b> One run is all I need, and a second one would mix up your answers.</p>' +
+      '<p class="notice" id="sending" hidden>Some answers are still being sent. Please keep this page open for a few seconds.</p>' +
+      '<p class="small" id="sent" hidden>All answers are saved.</p>' +
+      '</main>';
+  }
+};
+
+
+/* ---------- one run per tester ---------- */
+const DONE_KEY = "mm_test_done_" + TESTER;
+function markDone() { try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {} }
+function doneHere() { try { return localStorage.getItem(DONE_KEY) === "1"; } catch (e) { return false; } }
+// Asks Supabase only "has this tester code finished?" (yes/no). If the check fails, the test simply starts.
+function doneOnServer() {
+  return fetch("https://" + CONFIG.supabaseProjectId + ".supabase.co/rest/v1/rpc/tester_finished", {
+    method: "POST",
+    headers: { apikey: CONFIG.supabaseAnonKey, "Content-Type": "application/json" },
+    body: JSON.stringify({ t: TESTER })
+  }).then((r) => r.ok ? r.json() : false).then((v) => v === true).catch(() => false);
+}
+
+/* ---------- navigation ---------- */
+function go(name) {
+  if (name === "step0") { S.stepIndex = 0; name = steps().length ? "step_" + steps()[0] : "overall"; }
+  else if (name === "nextstep") {
+    S.stepIndex += 1;
+    const list = steps();
+    name = S.stepIndex < list.length ? "step_" + list[S.stepIndex] : "overall";
+  }
+  S.screen = name;
+  persist();
+  try { history.pushState({ mmTest: true, screen: name }, ""); } catch (e) {}
+  render();
+}
+
+function render() {
+  const name = !TESTER ? "missing" : S.screen;
+  const fn = SCREENS[name] || SCREENS.start;
+  $("#app").innerHTML = fn();
+  window.scrollTo(0, 0);
+  if (name === "ready") startReady();
+  if (name === "firstlook") startFirstLook();
+  if (name === "proto") startProto();
+  if (name === "thanks") { markDone(); watchSending(); }
+}
+
+/* ---------- thank-you screen: keep sending until everything has arrived ---------- */
+function flushPending() {
+  if (!S.pending.length) return Promise.resolve();
+  const rows = S.pending.slice();
+  return postRows(rows).then(() => {
+    S.pending = S.pending.filter((p) => !rows.some((r) => r.screen === p.screen && r.client_ts === p.client_ts));
+    persist();
+  }).catch(() => {});
+}
+function watchSending() {
+  const started = Date.now();
+  const tick = () => {
+    const sending = $("#sending"), sent = $("#sent");
+    if (!sending || !sent) return;
+    if (!S.pending.length) { sending.hidden = true; sent.hidden = false; return; }
+    if (Date.now() - started > 2000) sending.hidden = false;
+    flushPending().then(() => setTimeout(tick, S.pending.length ? 3000 : 0));
+  };
+  setTimeout(tick, 800);
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".progress span.past")) {
+    showToast("You can’t go back in this test. If you forgot something, add it at the end under ‘Anything else’.");
+    return;
+  }
+  const opt = e.target.closest(".opt");
+  if (opt) {
+    opt.parentElement.querySelectorAll(".opt").forEach((b) => b.setAttribute("aria-pressed", "false"));
+    opt.setAttribute("aria-pressed", "true");
+    return;
+  }
+  const zoom = e.target.closest("[data-zoom]");
+  if (zoom) {
+    const box = document.createElement("div");
+    box.className = "lightbox";
+    box.innerHTML = '<img src="' + esc(zoom.getAttribute("data-zoom")) + '" alt="Screenshot, bigger"><button type="button">Close</button>';
+    box.addEventListener("click", () => box.remove());
+    document.body.appendChild(box);
+    return;
+  }
+  const mz = e.target.closest("[data-mockzoom]");
+  if (mz) {
+    const box = document.createElement("div");
+    box.className = "lightbox";
+    const mock = mz.querySelector(".mock").cloneNode(true);
+    const scale = Math.min((window.innerWidth - 32) / 390, (window.innerHeight - 110) / 800, 1);
+    mock.style.transform = "scale(" + scale + ")";
+    mock.style.margin = (-(800 * (1 - scale)) / 2) + "px " + (-(390 * (1 - scale)) / 2) + "px";
+    box.appendChild(mock);
+    const close = document.createElement("button"); close.type = "button"; close.textContent = "Close";
+    box.appendChild(close);
+    box.addEventListener("click", () => box.remove());
+    document.body.appendChild(box);
+    return;
+  }
+  const btn = e.target.closest("[data-go]");
+  if (btn && btn.getAttribute("data-save") && !checkRequired()) return;
+  if (btn && btn.getAttribute("data-go") === "ready") {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    let n = 3;
+    btn.textContent = n + "…";
+    const t = setInterval(() => {
+      n -= 1;
+      if (n <= 0) { clearInterval(t); go("firstlook"); return; }
+      btn.textContent = n + "…";
+    }, 1000);
+    return;
+  }
+  if (btn) {
+    const key = btn.getAttribute("data-save");
+    if (key) save(key, collect());
+    go(btn.getAttribute("data-go"));
+  }
+});
+
+
+
+/* ---------- required answers ---------- */
+function isAnswered(el) {
+  if (el.matches("textarea, input")) return el.value.trim().length > 0;
+  return !!el.querySelector('[aria-pressed="true"]');
+}
+function checkRequired() {
+  document.querySelectorAll(".need").forEach((n) => n.remove());
+  document.querySelectorAll(".missing, .missing-group").forEach((n) => n.classList.remove("missing", "missing-group"));
+  const missing = [];
+  document.querySelectorAll("[data-required], [data-required-if]").forEach((el) => {
+    const cond = el.getAttribute("data-required-if");
+    if (cond) {
+      const [key, val] = cond.split(":");
+      const other = document.querySelector('[data-q="' + key + '"]');
+      const on = other && other.querySelector('[aria-pressed="true"]');
+      if (!on || on.getAttribute("data-v") !== val) return;
+    }
+    if (isAnswered(el)) return;
+    missing.push(el);
+    el.classList.add(el.matches("textarea, input") ? "missing" : "missing-group");
+    const msg = document.createElement("p");
+    msg.className = "need"; msg.setAttribute("role", "alert");
+    msg.textContent = "Please answer this one.";
+    (el.matches("textarea, input") ? el : (el.closest("fieldset") || el)).insertAdjacentElement("afterend", msg);
+  });
+  if (missing.length) {
+    const first = missing[0];
+    first.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (first.matches("textarea, input")) first.focus({ preventScroll: true });
+    return false;
+  }
+  return true;
+}
+// clear a message as soon as that question is answered
+document.addEventListener("input", (e) => {
+  const el = e.target.closest("[data-q]");
+  if (el && el.value.trim()) { el.classList.remove("missing"); const n = el.nextElementSibling; if (n && n.classList.contains("need")) n.remove(); }
+});
+document.addEventListener("click", (e) => {
+  const opt = e.target.closest(".opt");
+  if (!opt) return;
+  const group = opt.parentElement; group.classList.remove("missing-group");
+  const fs = group.closest("fieldset") || group; const n = fs.nextElementSibling;
+  if (n && n.classList.contains("need")) n.remove();
+});
+
+/* ---------- 3, 2, 1 before the first look ---------- */
+function startReady() {
+  let n = 3;
+  const t = setInterval(() => {
+    n -= 1;
+    if (n <= 0) { clearInterval(t); go("firstlook"); return; }
+    const old = $("#num"); if (!old) { clearInterval(t); return; }
+    const fresh = old.cloneNode(false); fresh.textContent = String(n); old.replaceWith(fresh);
+  }, 1000);
+}
+
+/* ---------- first look: 5 seconds, then gone ---------- */
+function startFirstLook() {
+  let left = CONFIG.firstLookSeconds;
+  const t = setInterval(() => {
+    left -= 1;
+    const c = $("#count"); if (c) c.textContent = String(Math.max(left, 0));
+    if (left <= 0) { clearInterval(t); go("firstlookQ"); }
+  }, 1000);
+}
+
+
+/* ---------- countdown before the questions come back ---------- */
+let backTimer = null;
+function startBackCountdown() {
+  const lead = 4;
+  setTimeout(() => {
+    if (S.screen !== "proto") return;
+    const stage = document.querySelector(".proto .stage"); if (!stage) return;
+    const bar = document.createElement("div"); bar.className = "backpill"; bar.setAttribute("role", "status");
+    stage.appendChild(bar);
+    let n = lead;
+    const show = () => { bar.textContent = "Back to the questions in " + n + "…"; };
+    show();
+    clearInterval(backTimer);
+    backTimer = setInterval(() => { n -= 1; if (n <= 0) { clearInterval(backTimer); return; } show(); }, 1000);
+  }, Math.max(0, (CONFIG.winnerHoldSeconds - lead) * 1000));
+}
+
+/* ---------- the prototype ---------- */
+let lastScreenAt = 0, stuckTimer = null, finishing = false;
+function startProto() {
+  finishing = false;
+  if (reloadNote) {
+    reloadNote = false;
+    const stage = document.querySelector(".proto .stage");
+    if (stage) {
+      const bar = document.createElement("div"); bar.className = "backbar"; bar.setAttribute("role", "status");
+      bar.textContent = "The page was reloaded, so the app started over. Please set up movie night again.";
+      stage.appendChild(bar);
+      setTimeout(() => bar.remove(), 7000);
+    }
+  }
+  if (!S.protoStartedAt) { S.protoStartedAt = Date.now(); persist(); }
+  lastScreenAt = Date.now();
+  clearInterval(stuckTimer);
+  stuckTimer = setInterval(() => {
+    const b = $("#stuck");
+    if (b && Date.now() - lastScreenAt > CONFIG.stuckAfterSeconds * 1000) b.hidden = false;
+  }, 1000);
+  const b = $("#stuck");
+  if (b) b.addEventListener("click", () => endProto(true));
+}
+
+function endProto(stuck) {
+  if (finishing) return;
+  finishing = true;
+  clearInterval(stuckTimer);
+  S.stuck = !!stuck;
+  S.protoEndedAt = Date.now();
+  if (S.reached.voting) S.reached.lobby = true;
+  if (S.reached.lobby) S.reached.setup = true;
+  save("prototype", {
+    completed: S.reached.winner && !stuck,
+    stuck: S.stuck,
+    mood: S.mood === undefined ? "unknown" : S.mood,
+    films: S.films,
+    votes: S.votes,
+    winner: S.winner,
+    reached: S.reached,
+    duration_seconds: Math.round((S.protoEndedAt - S.protoStartedAt) / 1000),
+    restarts_after_reload: S.protoRestarts || 0
+  });
+  go(stuck ? "stuckQ" : "quick");
+}
+
+window.addEventListener("message", (e) => {
+  let host = "";
+  try { host = new URL(e.origin).hostname; } catch (err) { return; }
+  if (!host.endsWith(".figma.site")) return;
+  const m = e.data;
+  if (!m || m.source !== "moviematch" || S.screen !== "proto") return;
+  const d = m.data || {};
+  if (m.type === "screen") {
+    lastScreenAt = Date.now();
+    const b = $("#stuck"); if (b) b.hidden = true;
+    if (/set up tonight/i.test(d.screen || "")) S.reached.setup = true;
+    // Safety net: if the winner screen shows but no winner signal follows, move on anyway.
+    if (/habemus|match!/i.test(d.screen || "") && !S.winner) {
+      const hs = d.headings || [];
+      setTimeout(() => {
+        if (S.winner || S.screen !== "proto") return;
+        const titles = S.films.map((f) => f.title);
+        const title = hs.find((x) => titles.indexOf(x) !== -1) || hs.find((x) => !/habemus|match!|said yes/i.test(x)) || "";
+        S.winner = { title: title, poster: null, result: null, headings: hs, fallback: true };
+        S.reached.winner = true;
+        persist();
+        endProto(false);
+      }, (CONFIG.winnerHoldSeconds + 3) * 1000);
+    }
+  }
+  if (m.type === "mood") { S.mood = d.mood; S.reached.lobby = true; S.reached.setup = true; }
+  if (m.type === "film" && d.title && !S.films.some((f) => f.title === d.title)) { S.films.push({ title: d.title, poster: d.poster || null, meta: d.meta || null, synopsis: d.synopsis || null, counter: d.counter || null }); S.reached.voting = true; }
+  if (m.type === "vote" && d.title) S.votes[d.title] = d.vote;
+  if (m.type === "winner" && !S.winner) {
+    const hs = d.headings || [];
+    const titles = S.films.map((f) => f.title);
+    const title = hs.find((h) => titles.indexOf(h) !== -1) || hs.find((h) => !/habemus|match!|said yes/i.test(h)) || hs[0] || "";
+    S.winner = { title: title, poster: d.poster || null, result: d.result || null, headings: hs, meta: d.meta || null, synopsis: d.synopsis || null, services: d.services || [] };
+    S.reached.winner = true;
+    persist();
+    startBackCountdown();
+    setTimeout(() => endProto(false), CONFIG.winnerHoldSeconds * 1000);
+  }
+  persist();
+});
+
+/* ---------- the browser back button: stay on the test, explain why ---------- */
+let toastTimer = null;
+function showToast(text) {
+  let t = $("#toast");
+  if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = text; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 6000);
+}
+try { history.pushState({ mmTest: true }, ""); } catch (e) {}
+window.addEventListener("popstate", () => {
+  try { history.pushState({ mmTest: true }, ""); } catch (e) {}
+  showToast("You can’t go back in this test. If you forgot something, add it at the end under ‘Anything else’.");
+});
+
+/* ---------- the page was reloaded while the prototype was open ---------- */
+let reloadNote = false;
+if (TESTER && S.screen === "proto") {
+  if (S.winner) {
+    S.reached.winner = true;
+    setTimeout(() => endProto(false), 0);
+  } else {
+    S.films = []; S.votes = {}; S.mood = undefined; S.winner = null;
+    S.reached = { setup: false, lobby: false, voting: false, winner: false };
+    S.protoRestarts = (S.protoRestarts || 0) + 1;
+    reloadNote = true;
+    persist();
+  }
+}
+
+if (TESTER && S.screen === "start") {
+  if (doneHere()) { S.screen = "done"; }
+  else {
+    render();
+    doneOnServer().then((finished) => { if (finished && S.screen === "start") { markDone(); S.screen = "done"; persist(); render(); } });
+  }
+}
+if (S.screen !== "start" || !TESTER) render();
+</script>
+</body>
+</html>
