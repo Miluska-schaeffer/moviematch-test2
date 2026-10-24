@@ -290,7 +290,17 @@ const easeQ = (key) =>
   '<fieldset><legend class="q">How easy or hard was this step?</legend><div class="stack"><div class="scale" data-q="' + key + '" data-required="1" role="group">' +
   [1, 2, 3, 4, 5, 6, 7].map((n) => '<button type="button" class="opt" aria-pressed="false" aria-label="' + n + ' of 7" data-v="' + n + '">' + n + '</button>').join("") +
   '</div><div class="scale-ends"><span>Very hard</span><span>Very easy</span></div></div></fieldset>';
-const confusingQ = (key, placeholder) => textQ(key, "Was anything here confusing, or missing?", placeholder, { hint: "Optional. Even small things help.", optional: true });
+const confusingQ = (key, placeholder, required) => required
+  ? textQ(key, "What was confusing, or missing?", placeholder)
+  : textQ(key, "Was anything here confusing, or missing?", placeholder, { hint: "Optional. Even small things help.", optional: true });
+// For a stuck tester, the last step they reached is where they got stuck: there, "confusing or missing" is required.
+const stuckHere = (step) => { const l = steps(); return !!S.stuck && l[l.length - 1] === step; };
+// The mood question, by how far they got. Joiners who never saw the lobby get an optional guess (the code BOOS may hint at it). Hosts who never saw it skip it.
+function moodQuestion() {
+  if (S.reached.lobby) return textQ("q13_mood", "What was tonight’s mood? How could you tell?", "Write or say your answer…", { rows: 3 });
+  if (ROLE === "joiner") return textQ("q13_mood_guess", "What kind of movie night do you think it was going to be? What gave you that idea?", "Write or say your guess…", { hint: "Optional.", rows: 3, optional: true });
+  return "";
+}
 const side = (caption) => '<span class="side">' + (caption ? '<p>' + esc(caption) + '</p>' : '') + '<b>Tap to see it bigger</b></span>';
 const shot = (src, alt, caption) => '<button type="button" class="shotrow" data-zoom="' + esc(src) + '"><img src="' + esc(src) + '" alt="' + esc(alt) + '">' + side(caption) + '</button>';
 
@@ -387,8 +397,8 @@ const SCREENS = {
       '<p class="part">Part 1 of 4: First look</p>' +
       '<h1>What did you see?</h1>' +
       '<p class="lead">Answer from memory. There’s no wrong answer.</p>' +
-      textQ("q1_what_and_who", "What do you think this app does, and who is it for?", "You can do it! Write or say your answer…") +
       micTip +
+      textQ("q1_what_and_who", "What do you think this app does, and who is it for?", "You can do it! Write or say your answer…") +
       '<button class="btn" data-save="first_look" data-go="task">Next</button>' +
       '</main>';
   },
@@ -421,22 +431,26 @@ const SCREENS = {
     return '<main>' +
       '<p class="part">Part 3 of 4: Step by step</p>' +
       '<h1>Thanks for telling me</h1>' +
-      '<p class="lead">Getting stuck is useful for me: it shows what to fix.</p>' +
-      textQ("where_stuck", "Where did you get stuck, and what were you trying to do?", "Write or say your answer…") +
+      '<p class="lead">Getting stuck is useful for me: it shows what to fix. Your feedback is still valuable.</p>' +
       micTip +
-      '<button class="btn" data-save="stuck" data-go="quick">Next</button>' +
+      textQ("where_stuck", "Where did you get stuck, and what were you trying to do?", "Write or say your answer…") +
+      textQ("q12_describe", "How would you describe this app to a friend?", "Write or say your answer…") +
+      moodQuestion() +
+      '<button class="btn" data-save="stuck" data-go="step0">' + (steps().length ? "Next: " + STEP_TITLES[steps()[0]] : "Almost done: Last questions") + '</button>' +
       '</main>';
   },
 
   quick() {
+    const moodQ = moodQuestion();
+    const oneQuestion = !S.reached.winner && !moodQ;
     return '<main>' +
       '<p class="part">Part 3 of 4: Step by step</p>' +
-      '<h1>' + (S.reached.winner ? "Done! A few quick questions first" : "A few quick questions first") + '</h1>' +
+      '<h1>' + (S.reached.winner ? "Done! A few quick questions first" : oneQuestion ? "A quick question first" : "A few quick questions first") + '</h1>' +
       '<p class="lead">Answer from memory. After this, we’ll go through what you just did, step by step.</p>' +
+      micTip +
       (S.reached.winner ? textQ("q10_movie_name", "What’s the name of tonight’s movie?", "Movie title", { input: true, hint: "Relax, doesn’t have to be the exact name, just what you remember" }) : "") +
       textQ("q12_describe", "How would you describe this app to a friend?", "Write or say your answer…") +
-      textQ("q13_mood", "What was tonight’s mood? How could you tell?", "Write or say your answer…", { rows: 3 }) +
-      micTip +
+      moodQ +
       '<button class="btn" data-save="quick" data-go="step0">' + (steps().length ? "Next: " + STEP_TITLES[steps()[0]] : "Almost done: Last questions") + '</button>' +
       '</main>';
   },
@@ -446,7 +460,7 @@ const SCREENS = {
       '<div class="stack"><h1>Setting up</h1><p class="lead">This is the screen where you set up movie night. Look at it again before you answer.</p></div>' +
       shot("img/setup.jpg", "Setup screen", "") +
       easeQ("ease") + micTip +
-      confusingQ("confusing", "This is your moment, write or say what you noticed…") +
+      confusingQ("confusing", "This is your moment, write or say what you noticed…", stuckHere("setup")) +
       '<button class="btn" data-save="step_setup" data-go="nextstep">' + nextLabelAfter("setup") + '</button>' +
       '</main>';
   },
@@ -456,7 +470,7 @@ const SCREENS = {
       '<div class="stack"><h1>Joining</h1><p class="lead">This is the screen where you joined the movie night. Look at it again before you answer.</p></div>' +
       shot("img/code-entry.jpg", "Code entry screen", "") +
       easeQ("ease") + micTip +
-      confusingQ("confusing", "Write or say what you noticed, big or small…") +
+      confusingQ("confusing", "Write or say what you noticed, big or small…", stuckHere("joining")) +
       '<button class="btn" data-save="step_joining" data-go="nextstep">' + nextLabelAfter("joining") + '</button>' +
       '</main>';
   },
@@ -466,7 +480,9 @@ const SCREENS = {
       '<div class="stack"><h1>Waiting for the vote</h1><p class="lead">This is the screen where you waited before voting. Look at it again before you answer.</p></div>' +
       shot(lobbyShot(), "Your lobby", "Your screen may have looked a little different.") +
       easeQ("ease") + micTip +
-      textQ("confusing", "Was anything here confusing, or missing?", "Write or say what you noticed, even if it’s super silly…", { hint: "Optional.", optional: true }) +
+      (stuckHere("lobby")
+        ? textQ("confusing", "What was confusing, or missing?", "Write or say what you noticed, even if it’s super silly…")
+        : textQ("confusing", "Was anything here confusing, or missing?", "Write or say what you noticed, even if it’s super silly…", { hint: "Optional.", optional: true })) +
       listQ("who_starts", "Who could start the vote?", ROLE === "joiner" ? ["Only the host", "Anyone in the group", "I’m not sure"] : ["Only me, as the host", "Anyone in the group", "I’m not sure"]) +
       textQ("how_knew", "How did you know?", "Share the secret, write or say your answer…", { hint: "Optional.", rows: 3, optional: true }) +
       '<button class="btn" data-save="step_lobby" data-go="nextstep">' + nextLabelAfter("lobby") + '</button>' +
@@ -481,10 +497,9 @@ const SCREENS = {
         ? mockShot(votingMock(S.films[0]), "This is a recreation of your screen. It may look slightly different, but it shows one of your recommended movies.")
         : shot("img/voting.jpg", "A voting card", "Your cards showed your own films.")) +
       (titles ? '<p class="small"><b>Your recommended films:</b> ' + esc(titles) + '</p>' : '') +
-      easeQ("ease") +
-      confusingQ("confusing", "Open your heart and write or say what you noticed…") +
+      easeQ("ease") + micTip +
+      confusingQ("confusing", "Open your heart and write or say what you noticed…", stuckHere("voting")) +
       textQ("how_picked", "In your own words, how is tonight’s movie picked?", "You can do it! Write or say your answer…") +
-      micTip +
       choiceQ("would_watch_any", "Would you have watched any of the recommended films?", ["Yes", "No", "Not sure"]) +
       '<button class="btn" data-save="step_voting" data-go="nextstep">' + nextLabelAfter("voting") + '</button>' +
       '</main>';
@@ -508,11 +523,12 @@ const SCREENS = {
     return '<main>' +
       '<p class="part">Part 4 of 4: Overall</p>' +
       '<h1>A few last questions</h1>' +
-      choiceQ("would_use", "Would you use this with your own group?", ["Yes", "Maybe", "No"]) +
+      micTip +
+      choiceQ("would_use", S.stuck ? "Would you still consider using this with your own group?" : "Would you use this with your own group?", ["Yes", "Maybe", "No"]) +
       textQ("would_use_why", "Why?", "What’s the first reason that comes to your mind…", { rows: 3 }) +
       choiceQ("hard_to_read", "Was any text hard to read?", ["Yes", "No"], "opts-2") +
       textQ("hard_to_read_where", "If yes, where?", "For example: the lobby or voting cards", { input: true, requiredIf: "hard_to_read:Yes" }) +
-      textQ("anything_else", "Anything else you’d want to share?", "Dime ahora o calla para siempre…", { hint: "Optional.", rows: 3, optional: true }) +
+      textQ("anything_else", "Anything else you’d want to share?", S.stuck ? "Whatever you’re thinking counts…!" : "Dime ahora o calla para siempre…", { hint: "Optional.", rows: 3, optional: true }) +
       '<button class="btn" data-save="overall" data-go="thanks">Send my answers</button>' +
       '</main>';
   },
