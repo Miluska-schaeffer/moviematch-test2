@@ -60,6 +60,7 @@
   .btn { font: inherit; font-size: 17px; font-weight: 600; min-height: 52px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-ink); width: 100%; cursor: pointer; }
   .btn:focus-visible, .opt:focus-visible, .shot:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
   .btn:disabled { opacity: .5; cursor: default; }
+  .btn[data-go="ready"]:disabled { opacity: 1; font-size: 22px; }
 
   .scale { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
   .scale-ends { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-top: 6px; }
@@ -75,16 +76,17 @@
   .opt.list[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); border: 2px solid var(--accent); }
 
   .progress { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
-  .progress span { height: 4px; border-radius: 2px; background: #DAD6CD; }
+  .progress span { height: 4px; border-radius: 2px; background: #DAD6CD; position: relative; }
+  .progress span.past::after { content: ""; position: absolute; left: 0; right: 0; top: -14px; bottom: -14px; }
   .progress span.on { background: var(--accent); }
   .stephead { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; color: var(--muted); }
 
-  .shotrow { display: flex; gap: 14px; align-items: flex-end; }
-  .shot { padding: 0; border: 0; background: none; cursor: zoom-in; display: flex; flex-direction: column; gap: 6px; text-align: left; font: inherit; }
-  .shot img { width: 150px; height: auto; border-radius: 14px; border: 1px solid #DAD6CD; display: block; }
-  .shot span { font-size: 13px; color: var(--muted); }
-  .shot b { font-size: 13px; color: var(--accent); }
-
+  .shotrow { display: flex; gap: 16px; align-items: flex-end; width: 100%; padding: 0; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: zoom-in; }
+  .shotrow > img, .shotrow > .mini { flex: 0 0 auto; width: 164px; height: auto; border-radius: 14px; border: 1px solid #DAD6CD; display: block; }
+  .shotrow .side { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-bottom: 2px; }
+  .shotrow .side p { font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .shotrow .side b { font-size: 13px; color: var(--accent); }
+  .shotrow:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; border-radius: 14px; }
   .films { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
   .film { display: flex; flex-direction: column; gap: 6px; }
   .poster { aspect-ratio: 2 / 3; width: 100%; border-radius: 10px; background: #2A1F3D; object-fit: cover; display: block; }
@@ -107,10 +109,9 @@
 
   /* Prototype inside the page */
   .proto { position: fixed; inset: 0; background: var(--dark); display: flex; flex-direction: column; }
-  .protobar { align-items: flex-start; }
-  .protobar .task { display: flex; flex-direction: column; gap: 2px; }
-  .protobar .task b { font-size: 12px; color: var(--muted); }
-  .stuck { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: none; border: 0; text-decoration: underline; padding: 6px 0; min-height: 36px; white-space: nowrap; cursor: pointer; }
+  .protobar { padding-top: calc(env(safe-area-inset-top, 0px) + 6px); padding-bottom: 6px; min-height: 0; }
+  .protobar .task { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stuck { font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); background: none; border: 0; text-decoration: underline; padding: 2px 0; min-height: 28px; white-space: nowrap; cursor: pointer; }
   .proto .stage { flex: 1 1 auto; min-height: 0; display: flex; justify-content: center; align-items: stretch; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .proto iframe { border: 0; width: 100%; height: 100%; background: var(--dark); }
   @media (min-width: 700px) {
@@ -123,6 +124,41 @@
   .lightbox button { font: inherit; font-size: 16px; font-weight: 600; color: #fff; background: rgba(255,255,255,.15); border: 0; border-radius: 999px; padding: 10px 22px; min-height: 44px; cursor: pointer; }
 
   .notice { background: #FBE9D5; color: #5C2E06; border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+
+  /* Recreations of the tester's own screens */
+  .mini { width: 164px; height: 337px !important; overflow: hidden; position: relative; }
+  .mini .mock { transform: scale(.42); transform-origin: top left; position: absolute; top: 0; left: 0; }
+  .mock { width: 390px; height: 800px; background: #0C0A11; color: #F2EEF8; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 28px 22px; display: flex; flex-direction: column; gap: 14px; text-align: left; overflow: hidden; }
+  .m-x { font-size: 26px; color: #CFC8DC; line-height: 1; }
+  .m-counter { font-size: 13px; font-weight: 700; letter-spacing: .2em; color: #A49CB4; margin-top: 18px; }
+  .m-card { position: relative; flex: 1 1 auto; border-radius: 30px; overflow: hidden; background: #241B33 center / cover no-repeat; border: 1px solid #2E2540; }
+  .m-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(12,10,17,0) 25%, rgba(27,20,40,.92) 58%, #1B1428 100%); }
+  .m-info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 20px 18px 22px; display: flex; flex-direction: column; gap: 8px; }
+  .m-title { font-size: 30px; font-weight: 700; line-height: 1.1; color: #FFFFFF; }
+  .m-meta { font-size: 14px; color: #E3DDEC; }
+  .m-syn { font-size: 14px; line-height: 1.4; color: #D7D0E2; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .m-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .m-btns span { border-radius: 999px; text-align: center; font-weight: 700; font-size: 18px; padding: 13px 0; color: #FFFFFF; }
+  .m-nope { background: #BF4A43; } .m-yes { background: #3D875A; }
+  .m-seen { text-align: center; font-size: 15px; color: #CFC8DC; margin-top: 6px; }
+  .m-psst { text-align: center; font-size: 13px; color: #A49CB4; }
+  .m-hab { text-align: center; font-size: 30px; font-weight: 700; color: #CFCBD4; margin: 26px 0 8px; }
+  .m-ticket { border-radius: 30px; overflow: hidden; background: #1B1428; border: 1px solid #2E2540; display: flex; flex-direction: column; }
+  .m-tposter { height: 290px; background: #241B33 center / cover no-repeat; }
+  .m-pill { align-self: center; margin-top: -18px; background: #17111F; border: 1px solid #3A3048; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #F2EEF8; position: relative; }
+  .m-tbody { padding: 10px 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .m-wtw { font-size: 12px; font-weight: 700; letter-spacing: .16em; color: #A49CB4; margin-top: 8px; }
+  .m-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .m-chips span { border: 1px solid #4A4058; border-radius: 999px; padding: 4px 12px; font-size: 13px; color: #D7D0E2; }
+  .m-new { text-align: center; font-weight: 700; font-size: 17px; color: #E3DDEC; margin-top: 18px; }
+  .lightbox .mock { flex: 0 0 auto; border-radius: 18px; transform-origin: center; }
+  .recreated { font-size: 13px; line-height: 1.45; color: var(--muted); }
+
+  .ready { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 18px; padding: 24px; }
+  .ready .num { font-size: 120px; font-weight: 800; line-height: 1; color: var(--accent); }
+  @media (prefers-reduced-motion: no-preference) { .ready .num { animation: pop .9s ease-out; } @keyframes pop { from { transform: scale(1.6); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1); opacity: 1; } } }
+
+  .toast { position: fixed; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); max-width: 448px; margin: 0 auto; background: var(--ink); color: #FFFFFF; border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.45; z-index: 20; }
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: no-preference) { main { animation: in .25s ease-out; } @keyframes in { from { opacity: 0; } to { opacity: 1; } } }
 </style>
@@ -238,7 +274,35 @@ const easeQ = (key) =>
   [1, 2, 3, 4, 5, 6, 7].map((n) => '<button type="button" class="opt" aria-pressed="false" aria-label="' + n + ' of 7" data-v="' + n + '">' + n + '</button>').join("") +
   '</div><div class="scale-ends"><span>Very hard</span><span>Very easy</span></div></div></fieldset>';
 const confusingQ = (key, placeholder) => textQ(key, "Was anything here confusing, or missing?", placeholder, { hint: "Optional. Even small things help." });
-const shot = (src, caption) => '<button type="button" class="shot" data-zoom="' + esc(src) + '"><img src="' + esc(src) + '" alt="' + esc(caption) + '"><span>' + esc(caption) + '</span><b>Tap to see it bigger</b></button>';
+const side = (caption) => '<span class="side">' + (caption ? '<p>' + esc(caption) + '</p>' : '') + '<b>Tap to see it bigger</b></span>';
+const shot = (src, alt, caption) => '<button type="button" class="shotrow" data-zoom="' + esc(src) + '"><img src="' + esc(src) + '" alt="' + esc(alt) + '">' + side(caption) + '</button>';
+
+
+/* ---------- recreations of the tester's own screens ---------- */
+const bg = (url) => url ? ' style="background-image:url(&quot;' + esc(url) + '&quot;)"' : '';
+function votingMock(f) {
+  return '<div class="mock"><div class="m-x">✕</div>' +
+    '<div class="m-counter">' + esc((f.counter || "Movie 01 / 05").toUpperCase()) + '</div>' +
+    '<div class="m-card"' + bg(f.poster) + '><div class="m-info">' +
+    '<div class="m-title">' + esc(f.title) + '</div>' +
+    (f.meta ? '<div class="m-meta">' + esc(f.meta) + '</div>' : '') +
+    (f.synopsis ? '<div class="m-syn">' + esc(f.synopsis) + '</div>' : '') +
+    '<div class="m-btns"><span class="m-nope">Nope</span><span class="m-yes">Yes!</span></div>' +
+    '<div class="m-seen">Already watched</div></div></div>' +
+    '<div class="m-psst">Psst! Private votes stay hidden</div></div>';
+}
+function winnerMock(w) {
+  return '<div class="mock"><div class="m-hab">Habemus Match!</div><div class="m-ticket">' +
+    '<div class="m-tposter"' + bg(w.poster) + '></div>' +
+    (w.result ? '<div class="m-pill">' + esc(w.result) + '</div>' : '') +
+    '<div class="m-tbody"><div class="m-title">' + esc(w.title) + '</div>' +
+    (w.meta ? '<div class="m-meta">' + esc(w.meta) + '</div>' : '') +
+    (w.synopsis ? '<div class="m-syn">' + esc(w.synopsis) + '</div>' : '') +
+    ((w.services || []).length ? '<div class="m-wtw">WHERE TO WATCH</div><div class="m-chips">' + w.services.map((x) => '<span>' + esc(x) + '</span>').join("") + '</div>' : '') +
+    '</div></div><div class="m-new">New movie night</div></div>';
+}
+const mockShot = (mockHtml, caption) =>
+  '<button type="button" class="shotrow" data-mockzoom="1"><span class="mini">' + mockHtml + '</span>' + side(caption) + '</button>';
 
 /* ---------- the steps a tester actually reached ---------- */
 function steps() {
@@ -254,7 +318,7 @@ const STEP_ORDER = ["setup", "lobby", "voting", "winner"];
 function stepHead(step) {
   const n = STEP_ORDER.indexOf(step) + 1;
   return '<div class="stack"><div class="stephead"><span>Step ' + n + ' of 4</span><span>About ' + (step === "winner" ? 1 : 2) + ' min</span></div>' +
-    '<div class="progress" aria-hidden="true">' + STEP_ORDER.map((s, i) => '<span class="' + (i < n ? "on" : "") + '"></span>').join("") + '</div></div>';
+    '<div class="progress" aria-hidden="true">' + STEP_ORDER.map((s, i) => '<span class="' + (i < n ? "on" : "") + (i < n - 1 ? " past" : "") + '"></span>').join("") + '</div></div>';
 }
 function nextLabelAfter(step) {
   const list = steps();
@@ -281,15 +345,22 @@ const SCREENS = {
       '<p>In this test you’ll do a few tasks on a prototype, followed by some questions. Please share everything you can, even the smallest things, it’ll help me a lot.</p>' +
       '<p>Remember this is just a prototype, so some things don’t work yet: e.g., sharing by link. If anything else doesn’t work, please let me know.</p>' +
       '<p>There are no right or wrong answers. If you get stuck, take a breath and try to keep going! If something feels unclear, that’s something for me to fix. Have fun!</p>' +
-      '<div class="tip">' + MIC + '<p><b>Hint:</b> You don’t have to type. Tap the microphone on your keyboard and just say your answers out loud.</p></div>' +
+      '<div class="tip">' + MIC + '<p><b>Hint:</b> You don’t have to type. Tap the microphone on your keyboard and just say your answers out loud. Answer in whatever language you like.</p></div>' +
       '<p class="small">Your answers are anonymous: I won’t use your name anywhere. While you use the prototype, it records where you tap and how long each screen takes, but not what you type.</p>' +
       '<p class="small">Optional: if you’re comfortable with it, turn on your phone’s screen recording now and send me the video at the end.</p>' +
-      '<button class="btn" data-go="firstlook">Let’s start</button>' +
+      '<button class="btn" data-go="ready">Let’s start</button>' +
       '</main>';
   },
 
+
+  ready() {
+    return '<div class="ready"><h1>Get ready</h1>' +
+      '<p class="lead">You’ll see the first screen of an app for 5 seconds. Then it disappears.</p>' +
+      '<div class="num" id="num" aria-live="polite">3</div></div>';
+  },
+
   firstlook() {
-    return '<div class="firstlook"><div class="bar"><span>Take a look. This disappears in</span><span class="count" id="count">' + CONFIG.firstLookSeconds + '</span></div>' +
+    return '<div class="firstlook"><div class="bar"><span>Take a look at the screen. It disappears in</span><span class="count" id="count">' + CONFIG.firstLookSeconds + '</span></div>' +
       '<img src="img/landing.jpg" alt="The first screen of the app"></div>';
   },
 
@@ -319,7 +390,7 @@ const SCREENS = {
 
   proto() {
     const src = CONFIG.prototypeUrl + (CONFIG.prototypeUrl.indexOf("?") === -1 ? "?" : "&") + "tester=" + encodeURIComponent(TESTER);
-    return '<div class="proto"><div class="protobar"><div class="task"><b>Your task</b><span>Set up movie night and vote. Stop when you see tonight’s movie.</span></div>' +
+    return '<div class="proto"><div class="protobar"><span class="task">Task: set up movie night and vote</span>' +
       '<button class="stuck" id="stuck" hidden>I’m stuck</button></div>' +
       '<div class="stage"><iframe id="frame" src="' + esc(src) + '" title="MovieMatch prototype" allow="clipboard-write"></iframe></div></div>';
   },
@@ -351,7 +422,7 @@ const SCREENS = {
   step_setup() {
     return '<main>' + stepHead("setup") +
       '<div class="stack"><h1>Setting up</h1><p class="lead">This is the screen where you set up movie night. Look at it again before you answer.</p></div>' +
-      '<div class="shotrow">' + shot("img/setup.jpg", "Setup screen") + '</div>' +
+      shot("img/setup.jpg", "Setup screen", "") +
       easeQ("ease") + micTip +
       confusingQ("confusing", "This is your moment, write or say what you noticed…") +
       '<button class="btn" data-save="step_setup" data-go="nextstep">' + nextLabelAfter("setup") + '</button>' +
@@ -361,7 +432,7 @@ const SCREENS = {
   step_lobby() {
     return '<main>' + stepHead("lobby") +
       '<div class="stack"><h1>Waiting for the vote</h1><p class="lead">This is the screen where you waited for the vote. Look at it again before you answer.</p></div>' +
-      '<div class="shotrow">' + shot(lobbyShot(), "Your lobby") + '<p class="small" style="padding-bottom:40px">Your screen may have looked a little different.</p></div>' +
+      shot(lobbyShot(), "Your lobby", "Your screen may have looked a little different.") +
       easeQ("ease") + micTip +
       textQ("confusing", "Was anything here confusing, or missing?", "Write or say what you noticed, even if it’s super silly…", { hint: "Optional." }) +
       listQ("who_starts", "Who could start the vote?", ["Only me, as the host", "Anyone in the group", "I’m not sure"]) +
@@ -371,22 +442,18 @@ const SCREENS = {
   },
 
   step_voting() {
-    const films = S.films.slice(0, 5).map((f) => {
-      const v = S.votes[f.title];
-      const cls = v === "Yes!" ? "vote yes" : v === "Already watched" ? "vote seen" : "vote";
-      return '<div class="film">' +
-        (f.poster ? '<img class="poster" src="' + esc(f.poster) + '" alt="Poster of ' + esc(f.title) + '">' : '<div class="poster"></div>') +
-        '<span class="film-title">' + esc(f.title) + '</span>' +
-        (v ? '<span class="' + cls + '">You: ' + esc(v) + '</span>' : '') + '</div>';
-    }).join("");
+    const titles = S.films.slice(0, 5).map((f) => f.title).join(", ");
     return '<main>' + stepHead("voting") +
-      '<div class="stack"><h1>Voting</h1><p class="lead">These are the films you voted on, and how you voted.</p></div>' +
-      '<div class="films">' + films + '</div>' +
+      '<div class="stack"><h1>Voting</h1><p class="lead">This is one of your voting screens. Look at it again before answering.</p></div>' +
+      (S.films[0] && S.films[0].meta
+        ? mockShot(votingMock(S.films[0]), "This is a recreation of your screen. It may look slightly different, but it shows one of your recommended movies.")
+        : shot("img/voting.jpg", "A voting card", "Your cards showed your own films.")) +
+      (titles ? '<p class="small"><b>Your recommended films:</b> ' + esc(titles) + '</p>' : '') +
       easeQ("ease") +
       confusingQ("confusing", "Open your heart and write or say what you noticed…") +
       textQ("how_picked", "In your own words, how is tonight’s movie picked?", "You can do it! Write or say your answer…") +
       micTip +
-      choiceQ("would_watch_any", "Would you have watched any of these films?", ["Yes", "No", "Not sure"]) +
+      choiceQ("would_watch_any", "Would you have watched any of the recommended films?", ["Yes", "No", "Not sure"]) +
       '<button class="btn" data-save="step_voting" data-go="nextstep">' + nextLabelAfter("voting") + '</button>' +
       '</main>';
   },
@@ -394,10 +461,10 @@ const SCREENS = {
   step_winner() {
     const w = S.winner || {};
     return '<main>' + stepHead("winner") +
-      '<div class="stack"><h1>Tonight’s movie</h1><p class="lead">This is the movie the app picked for your group.</p></div>' +
-      '<div class="winner">' + (w.poster ? '<img class="poster" src="' + esc(w.poster) + '" alt="Poster of ' + esc(w.title) + '">' : '<div class="poster" style="width:130px"></div>') +
-      '<div class="stack" style="padding-bottom:8px"><span style="font-size:20px;font-weight:700;line-height:1.25">' + esc(w.title || "") + '</span>' +
-      (w.result ? '<span class="small">' + esc(w.result) + '</span>' : '') + '</div></div>' +
+      '<div class="stack"><h1>Tonight’s movie</h1><p class="lead">This is the movie your group picked for tonight. Look at the screen again before answering.</p></div>' +
+      (w.title && w.meta
+        ? mockShot(winnerMock(w), "This is a recreation of your screen. It may look slightly different, but it shows the winner movie.")
+        : shot(/tied|random/i.test(w.result || "") ? "img/winner-tie.jpg" : "img/winner.jpg", "Tonight’s movie screen", "Your screen showed your group’s movie.")) +
       micTip +
       (S.mood ? choiceQ("fits_mood", "Does this movie fit tonight’s mood?", ["Yes", "Somewhat", "No"]) : "") +
       confusingQ("confusing", "Don’t be shy, write or say what you noticed…") +
@@ -426,7 +493,8 @@ const SCREENS = {
       '<p>Your answers are saved and cozy. You helped me a lot.</p>' +
       '<p>If you recorded your screen, please stop the recording and send me the video.</p>' +
       '<p class="small">You can close this page now.</p>' +
-      (S.pending.length ? '<p class="notice">Some answers are still being sent. Please keep this page open for a few seconds.</p>' : '') +
+      '<p class="notice" id="sending" hidden>Some answers are still being sent. Please keep this page open for a few seconds.</p>' +
+      '<p class="small" id="sent" hidden>All answers are saved.</p>' +
       '</main>';
   }
 };
@@ -449,11 +517,38 @@ function render() {
   const fn = SCREENS[name] || SCREENS.start;
   $("#app").innerHTML = fn();
   window.scrollTo(0, 0);
+  if (name === "ready") startReady();
   if (name === "firstlook") startFirstLook();
   if (name === "proto") startProto();
+  if (name === "thanks") watchSending();
+}
+
+/* ---------- thank-you screen: keep sending until everything has arrived ---------- */
+function flushPending() {
+  if (!S.pending.length) return Promise.resolve();
+  const rows = S.pending.slice();
+  return postRows(rows).then(() => {
+    S.pending = S.pending.filter((p) => !rows.some((r) => r.screen === p.screen && r.client_ts === p.client_ts));
+    persist();
+  }).catch(() => {});
+}
+function watchSending() {
+  const started = Date.now();
+  const tick = () => {
+    const sending = $("#sending"), sent = $("#sent");
+    if (!sending || !sent) return;
+    if (!S.pending.length) { sending.hidden = true; sent.hidden = false; return; }
+    if (Date.now() - started > 2000) sending.hidden = false;
+    flushPending().then(() => setTimeout(tick, S.pending.length ? 3000 : 0));
+  };
+  setTimeout(tick, 800);
 }
 
 document.addEventListener("click", (e) => {
+  if (e.target.closest(".progress span.past")) {
+    showToast("You can’t go back in this test. If you forgot something, add it at the end under ‘Anything else’.");
+    return;
+  }
   const opt = e.target.closest(".opt");
   if (opt) {
     opt.parentElement.querySelectorAll(".opt").forEach((b) => b.setAttribute("aria-pressed", "false"));
@@ -469,13 +564,52 @@ document.addEventListener("click", (e) => {
     document.body.appendChild(box);
     return;
   }
+  const mz = e.target.closest("[data-mockzoom]");
+  if (mz) {
+    const box = document.createElement("div");
+    box.className = "lightbox";
+    const mock = mz.querySelector(".mock").cloneNode(true);
+    const scale = Math.min((window.innerWidth - 32) / 390, (window.innerHeight - 110) / 800, 1);
+    mock.style.transform = "scale(" + scale + ")";
+    mock.style.margin = (-(800 * (1 - scale)) / 2) + "px " + (-(390 * (1 - scale)) / 2) + "px";
+    box.appendChild(mock);
+    const close = document.createElement("button"); close.type = "button"; close.textContent = "Close";
+    box.appendChild(close);
+    box.addEventListener("click", () => box.remove());
+    document.body.appendChild(box);
+    return;
+  }
   const btn = e.target.closest("[data-go]");
+  if (btn && btn.getAttribute("data-go") === "ready") {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    let n = 3;
+    btn.textContent = n + "…";
+    const t = setInterval(() => {
+      n -= 1;
+      if (n <= 0) { clearInterval(t); go("firstlook"); return; }
+      btn.textContent = n + "…";
+    }, 1000);
+    return;
+  }
   if (btn) {
     const key = btn.getAttribute("data-save");
     if (key) save(key, collect());
     go(btn.getAttribute("data-go"));
   }
 });
+
+
+/* ---------- 3, 2, 1 before the first look ---------- */
+function startReady() {
+  let n = 3;
+  const t = setInterval(() => {
+    n -= 1;
+    if (n <= 0) { clearInterval(t); go("firstlook"); return; }
+    const old = $("#num"); if (!old) { clearInterval(t); return; }
+    const fresh = old.cloneNode(false); fresh.textContent = String(n); old.replaceWith(fresh);
+  }, 1000);
+}
 
 /* ---------- first look: 5 seconds, then gone ---------- */
 function startFirstLook() {
@@ -534,20 +668,47 @@ window.addEventListener("message", (e) => {
     lastScreenAt = Date.now();
     const b = $("#stuck"); if (b) b.hidden = true;
     if (/set up tonight/i.test(d.screen || "")) S.reached.setup = true;
+    // Safety net: if the winner screen shows but no winner signal follows, move on anyway.
+    if (/habemus|match!/i.test(d.screen || "") && !S.winner) {
+      const hs = d.headings || [];
+      setTimeout(() => {
+        if (S.winner || S.screen !== "proto") return;
+        const titles = S.films.map((f) => f.title);
+        const title = hs.find((x) => titles.indexOf(x) !== -1) || hs.find((x) => !/habemus|match!|said yes/i.test(x)) || "";
+        S.winner = { title: title, poster: null, result: null, headings: hs, fallback: true };
+        S.reached.winner = true;
+        persist();
+        endProto(false);
+      }, (CONFIG.winnerHoldSeconds + 3) * 1000);
+    }
   }
   if (m.type === "mood") { S.mood = d.mood; S.reached.lobby = true; S.reached.setup = true; }
-  if (m.type === "film" && d.title && !S.films.some((f) => f.title === d.title)) { S.films.push({ title: d.title, poster: d.poster || null }); S.reached.voting = true; }
+  if (m.type === "film" && d.title && !S.films.some((f) => f.title === d.title)) { S.films.push({ title: d.title, poster: d.poster || null, meta: d.meta || null, synopsis: d.synopsis || null, counter: d.counter || null }); S.reached.voting = true; }
   if (m.type === "vote" && d.title) S.votes[d.title] = d.vote;
   if (m.type === "winner" && !S.winner) {
     const hs = d.headings || [];
     const titles = S.films.map((f) => f.title);
     const title = hs.find((h) => titles.indexOf(h) !== -1) || hs.find((h) => !/habemus|match!|said yes/i.test(h)) || hs[0] || "";
-    S.winner = { title: title, poster: d.poster || null, result: d.result || null, headings: hs };
+    S.winner = { title: title, poster: d.poster || null, result: d.result || null, headings: hs, meta: d.meta || null, synopsis: d.synopsis || null, services: d.services || [] };
     S.reached.winner = true;
     persist();
     setTimeout(() => endProto(false), CONFIG.winnerHoldSeconds * 1000);
   }
   persist();
+});
+
+/* ---------- the browser back button: stay on the test, explain why ---------- */
+let toastTimer = null;
+function showToast(text) {
+  let t = $("#toast");
+  if (!t) { t = document.createElement("div"); t.id = "toast"; t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = text; t.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 6000);
+}
+try { history.pushState({ mmTest: true }, ""); } catch (e) {}
+window.addEventListener("popstate", () => {
+  try { history.pushState({ mmTest: true }, ""); } catch (e) {}
+  showToast("You can’t go back in this test. If you forgot something, add it at the end under ‘Anything else’.");
 });
 
 render();
