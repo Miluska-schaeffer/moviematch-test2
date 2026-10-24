@@ -164,6 +164,11 @@
   .need { font-size: 14px; font-weight: 600; color: #A3261B; margin-top: 4px; }
   textarea.missing, input.missing { border-color: #A3261B; }
   .missing-group .opt { border-color: #A3261B; }
+
+  .backbar { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 14px); background: var(--bg); color: var(--ink); border-radius: 14px; padding: 14px 16px; font-size: 16px; font-weight: 600; text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,.35); z-index: 5; }
+  @media (prefers-reduced-motion: no-preference) { .backbar { animation: up .3s ease-out; } @keyframes up { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } } }
+  .proto { position: fixed; }
+  .proto .stage { position: relative; }
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: no-preference) { main { animation: in .25s ease-out; } @keyframes in { from { opacity: 0; } to { opacity: 1; } } }
 </style>
@@ -484,7 +489,7 @@ const SCREENS = {
       '<h1>A few last questions</h1>' +
       choiceQ("would_use", "Would you use this with your own group?", ["Yes", "Maybe", "No"]) +
       textQ("would_use_why", "Why?", "What’s the first reason that comes to your mind…", { rows: 3 }) +
-      choiceQ("hard_to_read", "Was any text hard to read?", ["No", "Yes"], "opts-2") +
+      choiceQ("hard_to_read", "Was any text hard to read?", ["Yes", "No"], "opts-2") +
       textQ("hard_to_read_where", "If yes, where?", "For example: the lobby or voting cards", { input: true, requiredIf: "hard_to_read:Yes" }) +
       textQ("anything_else", "Anything else you’d want to share?", "Dime ahora o calla para siempre…", { hint: "Optional.", rows: 3, optional: true }) +
       micTip +
@@ -697,6 +702,24 @@ function startFirstLook() {
   }, 1000);
 }
 
+
+/* ---------- countdown before the questions come back ---------- */
+let backTimer = null;
+function startBackCountdown() {
+  const lead = 4;
+  setTimeout(() => {
+    if (S.screen !== "proto") return;
+    const stage = document.querySelector(".proto .stage"); if (!stage) return;
+    const bar = document.createElement("div"); bar.className = "backbar"; bar.setAttribute("role", "status");
+    stage.appendChild(bar);
+    let n = lead;
+    const show = () => { bar.textContent = "Back to the questions in " + n + "…"; };
+    show();
+    clearInterval(backTimer);
+    backTimer = setInterval(() => { n -= 1; if (n <= 0) { clearInterval(backTimer); return; } show(); }, 1000);
+  }, Math.max(0, (CONFIG.winnerHoldSeconds - lead) * 1000));
+}
+
 /* ---------- the prototype ---------- */
 let lastScreenAt = 0, stuckTimer = null, finishing = false;
 function startProto() {
@@ -768,6 +791,7 @@ window.addEventListener("message", (e) => {
     S.winner = { title: title, poster: d.poster || null, result: d.result || null, headings: hs, meta: d.meta || null, synopsis: d.synopsis || null, services: d.services || [] };
     S.reached.winner = true;
     persist();
+    startBackCountdown();
     setTimeout(() => endProto(false), CONFIG.winnerHoldSeconds * 1000);
   }
   persist();
