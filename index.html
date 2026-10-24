@@ -160,6 +160,10 @@
   @media (prefers-reduced-motion: no-preference) { .ready .num { animation: pop .9s ease-out; } @keyframes pop { from { transform: scale(1.6); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1); opacity: 1; } } }
 
   .toast { position: fixed; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); max-width: 448px; margin: 0 auto; background: var(--ink); color: #FFFFFF; border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.45; z-index: 20; }
+
+  .need { font-size: 14px; font-weight: 600; color: #A3261B; margin-top: 4px; }
+  textarea.missing, input.missing { border-color: #A3261B; }
+  .missing-group .opt { border-color: #A3261B; }
   [hidden] { display: none !important; }
   @media (prefers-reduced-motion: no-preference) { main { animation: in .25s ease-out; } @keyframes in { from { opacity: 0; } to { opacity: 1; } } }
 </style>
@@ -177,7 +181,7 @@ const CONFIG = {
   supabaseProjectId: "mhxolypcoccahumanspw",
   supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oeG9seXBjb2NjYWh1bWFuc3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0NDA1MTcsImV4cCI6MjEwODAxNjUxN30.p8rcHPJUWKbRs_ceYMPI6u5MRFG1NYkTbYp8GQy6-Bk",
   stuckAfterSeconds: 40,
-  winnerHoldSeconds: 5,
+  winnerHoldSeconds: 8,
   firstLookSeconds: 5
 };
 
@@ -253,28 +257,30 @@ function collect() {
 }
 
 /* ---------- building blocks ---------- */
+// Every question is required unless it says "Optional". requiredIf: only required when another answer has a value.
+const req = (opts) => opts && opts.optional ? '' : (opts && opts.requiredIf ? ' data-required-if="' + esc(opts.requiredIf) + '"' : ' data-required="1"');
 const textQ = (key, label, placeholder, opts) => {
   opts = opts || {};
   return '<div class="stack"><label class="q" for="' + key + '">' + label + '</label>' +
     (opts.hint ? '<span class="small">' + opts.hint + '</span>' : '') +
     (opts.input
-      ? '<input type="text" id="' + key + '" data-q="' + key + '" placeholder="' + esc(placeholder) + '" autocomplete="off">'
-      : '<textarea id="' + key + '" data-q="' + key + '" rows="' + (opts.rows || 4) + '" placeholder="' + esc(placeholder) + '"></textarea>') +
+      ? '<input type="text" id="' + key + '" data-q="' + key + '"' + req(opts) + ' placeholder="' + esc(placeholder) + '" autocomplete="off">'
+      : '<textarea id="' + key + '" data-q="' + key + '"' + req(opts) + ' rows="' + (opts.rows || 4) + '" placeholder="' + esc(placeholder) + '"></textarea>') +
     '</div>';
 };
 const choiceQ = (key, label, values, cls) =>
-  '<fieldset><legend class="q">' + label + '</legend><div class="opts ' + (cls || "opts-3") + '" data-q="' + key + '" role="group">' +
+  '<fieldset><legend class="q">' + label + '</legend><div class="opts ' + (cls || "opts-3") + '" data-q="' + key + '" data-required="1" role="group">' +
   values.map((v) => '<button type="button" class="opt' + (cls === "list" ? " list" : "") + '" aria-pressed="false" data-v="' + esc(v) + '">' + esc(v) + '</button>').join("") +
   '</div></fieldset>';
 const listQ = (key, label, values) =>
-  '<fieldset><legend class="q">' + label + '</legend><div class="opts" data-q="' + key + '" role="group">' +
+  '<fieldset><legend class="q">' + label + '</legend><div class="opts" data-q="' + key + '" data-required="1" role="group">' +
   values.map((v) => '<button type="button" class="opt list" aria-pressed="false" data-v="' + esc(v) + '">' + esc(v) + '</button>').join("") +
   '</div></fieldset>';
 const easeQ = (key) =>
-  '<fieldset><legend class="q">How easy or hard was this step?</legend><div class="stack"><div class="scale" data-q="' + key + '" role="group">' +
+  '<fieldset><legend class="q">How easy or hard was this step?</legend><div class="stack"><div class="scale" data-q="' + key + '" data-required="1" role="group">' +
   [1, 2, 3, 4, 5, 6, 7].map((n) => '<button type="button" class="opt" aria-pressed="false" aria-label="' + n + ' of 7" data-v="' + n + '">' + n + '</button>').join("") +
   '</div><div class="scale-ends"><span>Very hard</span><span>Very easy</span></div></div></fieldset>';
-const confusingQ = (key, placeholder) => textQ(key, "Was anything here confusing, or missing?", placeholder, { hint: "Optional. Even small things help." });
+const confusingQ = (key, placeholder) => textQ(key, "Was anything here confusing, or missing?", placeholder, { hint: "Optional. Even small things help.", optional: true });
 const side = (caption) => '<span class="side">' + (caption ? '<p>' + esc(caption) + '</p>' : '') + '<b>Tap to see it bigger</b></span>';
 const shot = (src, alt, caption) => '<button type="button" class="shotrow" data-zoom="' + esc(src) + '"><img src="' + esc(src) + '" alt="' + esc(alt) + '">' + side(caption) + '</button>';
 
@@ -434,9 +440,9 @@ const SCREENS = {
       '<div class="stack"><h1>Waiting for the vote</h1><p class="lead">This is the screen where you waited for the vote. Look at it again before you answer.</p></div>' +
       shot(lobbyShot(), "Your lobby", "Your screen may have looked a little different.") +
       easeQ("ease") + micTip +
-      textQ("confusing", "Was anything here confusing, or missing?", "Write or say what you noticed, even if it’s super silly…", { hint: "Optional." }) +
+      textQ("confusing", "Was anything here confusing, or missing?", "Write or say what you noticed, even if it’s super silly…", { hint: "Optional.", optional: true }) +
       listQ("who_starts", "Who could start the vote?", ["Only me, as the host", "Anyone in the group", "I’m not sure"]) +
-      textQ("how_knew", "How did you know?", "Share the secret, write or say your answer…", { hint: "Optional.", rows: 3 }) +
+      textQ("how_knew", "How did you know?", "Share the secret, write or say your answer…", { hint: "Optional.", rows: 3, optional: true }) +
       '<button class="btn" data-save="step_lobby" data-go="nextstep">' + nextLabelAfter("lobby") + '</button>' +
       '</main>';
   },
@@ -479,10 +485,17 @@ const SCREENS = {
       choiceQ("would_use", "Would you use this with your own group?", ["Yes", "Maybe", "No"]) +
       textQ("would_use_why", "Why?", "What’s the first reason that comes to your mind…", { rows: 3 }) +
       choiceQ("hard_to_read", "Was any text hard to read?", ["No", "Yes"], "opts-2") +
-      textQ("hard_to_read_where", "If yes, where?", "For example: the lobby or voting cards", { input: true }) +
-      textQ("anything_else", "Anything else you’d want to share?", "Dime ahora o calla para siempre…", { hint: "Optional.", rows: 3 }) +
+      textQ("hard_to_read_where", "If yes, where?", "For example: the lobby or voting cards", { input: true, requiredIf: "hard_to_read:Yes" }) +
+      textQ("anything_else", "Anything else you’d want to share?", "Dime ahora o calla para siempre…", { hint: "Optional.", rows: 3, optional: true }) +
       micTip +
       '<button class="btn" data-save="overall" data-go="thanks">Send my answers</button>' +
+      '</main>';
+  },
+
+  done() {
+    return '<main style="padding-top:calc(env(safe-area-inset-top,0px) + 96px)">' +
+      '<h1>You’ve already done this test</h1>' +
+      '<p>Thank you, your answers are saved. One run is all I need, so you can close this window now.</p>' +
       '</main>';
   },
 
@@ -492,12 +505,26 @@ const SCREENS = {
       '<h1>Gracias!</h1>' +
       '<p>Your answers are saved and cozy. You helped me a lot.</p>' +
       '<p>If you recorded your screen, please stop the recording and send me the video.</p>' +
-      '<p class="small">You can close this page now.</p>' +
+      '<p><b>Please close this window now.</b> One run is all I need, and a second one would mix up your answers.</p>' +
       '<p class="notice" id="sending" hidden>Some answers are still being sent. Please keep this page open for a few seconds.</p>' +
       '<p class="small" id="sent" hidden>All answers are saved.</p>' +
       '</main>';
   }
 };
+
+
+/* ---------- one run per tester ---------- */
+const DONE_KEY = "mm_test_done_" + TESTER;
+function markDone() { try { localStorage.setItem(DONE_KEY, "1"); } catch (e) {} }
+function doneHere() { try { return localStorage.getItem(DONE_KEY) === "1"; } catch (e) { return false; } }
+// Asks Supabase only "has this tester code finished?" (yes/no). If the check fails, the test simply starts.
+function doneOnServer() {
+  return fetch("https://" + CONFIG.supabaseProjectId + ".supabase.co/rest/v1/rpc/tester_finished", {
+    method: "POST",
+    headers: { apikey: CONFIG.supabaseAnonKey, "Content-Type": "application/json" },
+    body: JSON.stringify({ t: TESTER })
+  }).then((r) => r.ok ? r.json() : false).then((v) => v === true).catch(() => false);
+}
 
 /* ---------- navigation ---------- */
 function go(name) {
@@ -521,7 +548,7 @@ function render() {
   if (name === "ready") startReady();
   if (name === "firstlook") startFirstLook();
   if (name === "proto") startProto();
-  if (name === "thanks") watchSending();
+  if (name === "thanks") { markDone(); watchSending(); }
 }
 
 /* ---------- thank-you screen: keep sending until everything has arrived ---------- */
@@ -581,6 +608,7 @@ document.addEventListener("click", (e) => {
     return;
   }
   const btn = e.target.closest("[data-go]");
+  if (btn && btn.getAttribute("data-save") && !checkRequired()) return;
   if (btn && btn.getAttribute("data-go") === "ready") {
     if (btn.disabled) return;
     btn.disabled = true;
@@ -600,6 +628,53 @@ document.addEventListener("click", (e) => {
   }
 });
 
+
+
+/* ---------- required answers ---------- */
+function isAnswered(el) {
+  if (el.matches("textarea, input")) return el.value.trim().length > 0;
+  return !!el.querySelector('[aria-pressed="true"]');
+}
+function checkRequired() {
+  document.querySelectorAll(".need").forEach((n) => n.remove());
+  document.querySelectorAll(".missing, .missing-group").forEach((n) => n.classList.remove("missing", "missing-group"));
+  const missing = [];
+  document.querySelectorAll("[data-required], [data-required-if]").forEach((el) => {
+    const cond = el.getAttribute("data-required-if");
+    if (cond) {
+      const [key, val] = cond.split(":");
+      const other = document.querySelector('[data-q="' + key + '"]');
+      const on = other && other.querySelector('[aria-pressed="true"]');
+      if (!on || on.getAttribute("data-v") !== val) return;
+    }
+    if (isAnswered(el)) return;
+    missing.push(el);
+    el.classList.add(el.matches("textarea, input") ? "missing" : "missing-group");
+    const msg = document.createElement("p");
+    msg.className = "need"; msg.setAttribute("role", "alert");
+    msg.textContent = "Please answer this one.";
+    (el.matches("textarea, input") ? el : (el.closest("fieldset") || el)).insertAdjacentElement("afterend", msg);
+  });
+  if (missing.length) {
+    const first = missing[0];
+    first.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (first.matches("textarea, input")) first.focus({ preventScroll: true });
+    return false;
+  }
+  return true;
+}
+// clear a message as soon as that question is answered
+document.addEventListener("input", (e) => {
+  const el = e.target.closest("[data-q]");
+  if (el && el.value.trim()) { el.classList.remove("missing"); const n = el.nextElementSibling; if (n && n.classList.contains("need")) n.remove(); }
+});
+document.addEventListener("click", (e) => {
+  const opt = e.target.closest(".opt");
+  if (!opt) return;
+  const group = opt.parentElement; group.classList.remove("missing-group");
+  const fs = group.closest("fieldset") || group; const n = fs.nextElementSibling;
+  if (n && n.classList.contains("need")) n.remove();
+});
 
 /* ---------- 3, 2, 1 before the first look ---------- */
 function startReady() {
@@ -712,7 +787,14 @@ window.addEventListener("popstate", () => {
   showToast("You can’t go back in this test. If you forgot something, add it at the end under ‘Anything else’.");
 });
 
-render();
+if (TESTER && S.screen === "start") {
+  if (doneHere()) { S.screen = "done"; }
+  else {
+    render();
+    doneOnServer().then((finished) => { if (finished && S.screen === "start") { markDone(); S.screen = "done"; persist(); render(); } });
+  }
+}
+if (S.screen !== "start" || !TESTER) render();
 </script>
 </body>
 </html>
