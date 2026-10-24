@@ -144,8 +144,9 @@
   .m-psst { text-align: center; font-size: 13px; color: #A49CB4; }
   .m-hab { text-align: center; font-size: 30px; font-weight: 700; color: #CFCBD4; margin: 26px 0 8px; }
   .m-ticket { border-radius: 30px; overflow: hidden; background: #1B1428; border: 1px solid #2E2540; display: flex; flex-direction: column; }
-  .m-tposter { height: 290px; background: #241B33 center / cover no-repeat; }
+  .m-tposter { height: 280px; background: #241B33 center / cover no-repeat; }
   .m-pill { align-self: center; margin-top: -18px; background: #17111F; border: 1px solid #3A3048; border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: #F2EEF8; position: relative; }
+  .m-pill-top { margin: -4px auto 4px; }
   .m-tbody { padding: 10px 18px 20px; display: flex; flex-direction: column; gap: 8px; }
   .m-wtw { font-size: 12px; font-weight: 700; letter-spacing: .16em; color: #A49CB4; margin-top: 8px; }
   .m-chips { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -285,16 +286,15 @@ function votingMock(f) {
     '<div class="m-counter">' + esc((f.counter || "Movie 01 / 05").toUpperCase()) + '</div>' +
     '<div class="m-card"' + bg(f.poster) + '><div class="m-info">' +
     '<div class="m-title">' + esc(f.title) + '</div>' +
-    (f.meta ? '<div class="m-meta">' + esc(f.meta) + '</div>' : '') +
-    (f.synopsis ? '<div class="m-syn">' + esc(f.synopsis) + '</div>' : '') +
     '<div class="m-btns"><span class="m-nope">Nope</span><span class="m-yes">Yes!</span></div>' +
     '<div class="m-seen">Already watched</div></div></div>' +
     '<div class="m-psst">Psst! Private votes stay hidden</div></div>';
 }
 function winnerMock(w) {
-  return '<div class="mock"><div class="m-hab">Habemus Match!</div><div class="m-ticket">' +
+  return '<div class="mock"><div class="m-hab">Habemus Match!</div>' +
+    (w.result ? '<div class="m-pill m-pill-top">' + esc(w.result) + '</div>' : '') +
+    '<div class="m-ticket">' +
     '<div class="m-tposter"' + bg(w.poster) + '></div>' +
-    (w.result ? '<div class="m-pill">' + esc(w.result) + '</div>' : '') +
     '<div class="m-tbody"><div class="m-title">' + esc(w.title) + '</div>' +
     (w.meta ? '<div class="m-meta">' + esc(w.meta) + '</div>' : '') +
     (w.synopsis ? '<div class="m-syn">' + esc(w.synopsis) + '</div>' : '') +
@@ -445,7 +445,7 @@ const SCREENS = {
     const titles = S.films.slice(0, 5).map((f) => f.title).join(", ");
     return '<main>' + stepHead("voting") +
       '<div class="stack"><h1>Voting</h1><p class="lead">This is one of your voting screens. Look at it again before answering.</p></div>' +
-      (S.films[0] && S.films[0].meta
+      (S.films[0] && S.films[0].poster
         ? mockShot(votingMock(S.films[0]), "This is a recreation of your screen. It may look slightly different, but it shows one of your recommended movies.")
         : shot("img/voting.jpg", "A voting card", "Your cards showed your own films.")) +
       (titles ? '<p class="small"><b>Your recommended films:</b> ' + esc(titles) + '</p>' : '') +
@@ -509,6 +509,7 @@ function go(name) {
   }
   S.screen = name;
   persist();
+  try { history.pushState({ mmTest: true, screen: name }, ""); } catch (e) {}
   render();
 }
 
